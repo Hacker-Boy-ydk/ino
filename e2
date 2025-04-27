@@ -1,0 +1,121 @@
+#include <DHTesp.h> // Including library for DHT
+
+#include <ESP8266WiFi.h>
+
+String apiKey = "NKLX4FMEDECDD9OV"; // Your Write API key from ThingSpeak
+
+const char *ssid = "Abc"; // Replace with your Wi-Fi SSID
+
+const char *pass = "12345678"; // Replace with your Wi-Fi password
+
+const char *server = "api.thingspeak.com"; // ThingSpeak server
+
+#define DHTPIN 4 // Pin where the DHT11 is connected (GPIO 4)
+WiFiClient client;
+
+void setup() {
+
+Serial.begin(9600); // Baud rate for Serial Monitor
+
+delay(10); // Small delay
+
+// Initialize DHT sensor with the correct pin
+
+dht.setup(4, DHTesp::DHT11); // Correct the pin to DHTPIN
+
+Serial.println("Connecting to Wi-Fi...");
+
+WiFi.begin(ssid, pass);
+
+// Wait until connected to Wi-Fi
+
+while (WiFi.status() != WL_CONNECTED) {
+
+delay(500);
+
+Serial.print(".");
+
+}
+
+Serial.println("\nROLL No. 7, 12, 15, 24");
+
+-+ Serial.println("\nWi-Fi connected!");
+
+}
+
+void loop() {
+
+// Read humidity and temperature
+
+float h = dht.getHumidity();
+
+float t = dht.getTemperature();
+
+// Check if the sensor reading is valid
+
+if (isnan(h) || isnan(t)) {
+
+Serial.println("Failed to read from DHT sensor!");
+
+return;
+
+}
+
+// If client connects to ThingSpeak
+if (client.connect(server, 80)) {
+
+Serial.println("Connected to ThingSpeak");
+
+String postStr = apiKey;
+
+postStr += "&field1=" + String(t); // Field 1 is temperature
+
+postStr += "&field2=" + String(h); // Field 2 is humidity
+
+postStr += "\r\n\r\n";
+
+// Send HTTP POST request to ThingSpeak
+
+client.print("POST /update HTTP/1.1\n");
+
+client.print("Host: api.thingspeak.com\n");
+
+client.print("Connection: close\n");
+
+client.print("X-THINGSPEAKAPIKEY: " + apiKey + "\n");
+
+client.print("Content-Type:
+
+application/x-www-form-urlencoded\n");
+
+client.print("Content-Length: " + String(postStr.length()) + "\n\n");
+
+client.print(postStr);
+
+// Print data to Serial Monitor for debugging
+
+Serial.print("Temperature: ");
+
+Serial.print(t);
+
+Serial.println(" °C");
+
+Serial.print("Humidity: ");
+
+Serial.print(h);
+
+Serial.println(" %");
+
+} else {
+
+Serial.println("Failed to connect to ThingSpeak!");
+
+}
+
+client.stop(); // Stop the client connection
+
+Serial.println("Waiting...");
+
+// ThingSpeak update rate: minimum 15 seconds
+
+delay(15000); // Delay for 15 seconds before sending the next data}
