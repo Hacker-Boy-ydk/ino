@@ -1,0 +1,129 @@
+#define BLYNK_TEMPLATE_ID "TMPL3J1foa-QH"
+
+#define BLYNK_TEMPLATE_NAME "Abdul Qadeer"
+
+#define BLYNK_AUTH_TOKEN "DBKuAzLi51MdT8p6zPx-JRTJqBB2-oKl"
+
+#include <DHT.h>
+
+#include <DHT_U.h>
+
+#include <ESP8266WiFi.h>
+
+#include <BlynkSimpleEsp8266.h>
+
+#define DHTTYPE DHT11 // Define sensor type
+
+#define BLYNK_PRINT Serial // Enable Blynk debugging via Serial
+
+Monitor
+
+#define DHT_PIN D4 // Change to the GPIO pin connected to
+
+your DHT sensor
+
+DHT dht(DHT_PIN, DHTTYPE); // Create an instance of the DHT sensor
+
+// Wi-Fi credentials
+
+char auth[] = "DBKuAzLi51MdT8p6zPx-JRTJqBB2-oKl"; // Blynk
+
+authentication token
+
+char ssid[] = "Abdul Qadeer"; // Your Wi-Fi credentials
+
+char pass[] = "7715860090"; // Your Wi-Fi password
+
+float t; // Temperature
+float h; // Humidity
+
+void setup() {
+
+ Serial.begin(9600); // Start serial communication for debugging
+
+ // Wi-Fi connection setup
+
+ WiFi.begin(ssid, pass);
+
+ Serial.print("Connecting to WiFi");
+
+ while (WiFi.status() != WL_CONNECTED) {
+
+ delay(1000);
+
+ Serial.println(".");
+
+ }
+
+ Serial.println("Connected to WiFi!");
+
+ Serial.println("IP Address: " + WiFi.localIP().toString());
+
+ // Blynk setup
+
+ Blynk.begin(auth, ssid, pass);
+
+ // Initialize DHT sensor
+
+ dht.begin();
+
+ Serial.println("DHT sensor initialized");
+
+}
+
+void sendUptime() {
+
+ h = dht.readHumidity(); // Read humidity
+
+ t = dht.readTemperature(); // Read temperature
+
+ // Check if reading failed
+
+ if (isnan(h) || isnan(t)) {
+
+ Serial.println("Failed to read from DHT sensor!");
+
+ return;
+
+ }
+
+ Serial.println("\nHumidity and temperature:");
+
+ Serial.println("43 | 15 | 36 | 7 | 52:");
+
+ Serial.print("Current humidity = ");
+
+ Serial.print(h);
+
+ Serial.print("%");
+
+ Serial.print(" temperature = ");
+
+ Serial.print(t);
+
+ // Send data to Blynk
+
+ Blynk.virtualWrite(V0, t); // Send temperature to virtual pin V0
+
+ Blynk.virtualWrite(V1, h); // Send humidity to virtual pin V1
+
+ Blynk.virtualWrite(V2, "Temperature")
+
+ Blynk.virtualWrite(V3, "Humidity")
+ Blynk.virtualWrite(V4, "Abdul Qadeer") }
+
+void loop() {
+
+ // Ensure Blynk is running and connected
+
+ Blynk.run();
+
+ // Send temperature and humidity data to Blynk
+
+ sendUptime(); 
+
+ // Delay between readings (2 seconds)
+
+ delay(2000); 
+
+}
