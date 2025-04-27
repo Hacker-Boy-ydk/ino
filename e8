@@ -1,0 +1,35 @@
+subscriber.py
+
+import paho.mqtt.client as mqtt
+
+# Create an MQTT client instance
+
+c = mqtt.Client()
+
+# Define on_connect callback
+
+def onc(client, userdata, flags, rc):
+
+print("Connected with result code:", rc)
+
+client.subscribe("S/topic") # New topic
+
+# Define on_message callback
+
+def onm(client, userdata, msg):
+
+print("Received message:", msg.payload.decode())
+
+# Assign callback functions
+
+c.on_connect = onc
+
+c.on_message = onm
+
+# Connect to the broker
+
+c.connect("test.mosquitto.org", 1883)
+
+# Keep the subscriber running
+
+c.loop_forever()
