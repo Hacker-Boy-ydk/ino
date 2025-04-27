@@ -1,0 +1,108 @@
+#define BLYNK_TEMPLATE_ID "TMPL3GqCALYIn"
+
+#define BLYNK_TEMPLATE_NAME "ex 4"
+
+#include <ESP8266WiFi.h>
+
+#include <BlynkSimpleEsp8266.h>
+
+// Replace with your network credentials
+
+char ssid[] = "Abdul Qadeer"; // Your WiFi SSID
+
+char pass[] = "7715860090"; // Your WiFi password
+
+// Your Blynk Authorization Token (you received this in your email)
+
+char auth[] = "NzFmxBEgVGh7lg9sOc0iDd05hbSmofAl";
+
+// Set the built-in LED pin (usually D4 for NodeMCU)
+
+#define LED_PIN 2 // GPIO2 corresponds to the built-in LED (usually D4)
+
+// Wi-Fi Connection Setup
+
+void setup()
+
+{
+
+ // Start the Serial Monitor for debugging
+
+ Serial.begin(9600);
+
+ // Connecting to Wi-Fi
+
+ Serial.println("Connecting to WiFi...");
+
+ Blynk.begin(auth, ssid, pass);
+
+ // Set LED_PIN as output
+
+ pinMode(LED_PIN, OUTPUT);
+
+ // Wait for Wi-Fi connection
+
+ while (WiFi.status() != WL_CONNECTED) {
+
+ delay(1000);
+
+ Serial.print("hi");
+
+ }
+
+ // Once connected to Wi-Fi
+
+ if (WiFi.status() == WL_CONNECTED) {
+
+ Serial.println();
+ Serial.println("Connected to WiFi!");
+
+ Serial.print("IP Address: ");
+
+ Serial.println(WiFi.localIP());
+
+ }
+
+ // Print your roll numbers
+
+ Serial.println("Roll No. 43");
+
+}
+
+void loop()
+
+{
+
+ Blynk.run(); // Run Blynk tasks
+
+}
+
+// This function is called when the virtual pin V0 is written to (when the
+
+button in the Blynk app is pressed)
+
+BLYNK_WRITE(V0) {
+
+ int pinValue = param.asInt(); // Get the value sent by the app (1 = ON,
+
+0 = OFF)
+
+ if (pinValue == 1) {
+
+ digitalWrite(LED_PIN, HIGH); // Turn the LED ON
+
+ Serial.println("LED ON");
+
+ Blynk.virtualWrite(V1, "LED ON");
+
+ } else {
+
+ digitalWrite(LED_PIN, LOW); // Turn the LED OFF
+
+ Serial.println("LED OFF");
+
+ Blynk.virtualWrite(V1, "LED OFF"); // Change to "LED OFF"
+
+ }
+
+}
