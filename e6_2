@@ -1,0 +1,51 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <DHT.h>
+
+#define DHTPIN D2          // D2 pin on NodeMCU
+#define DHTTYPE DHT11      // DHT11 sensor
+
+const char *id = "CDD";
+const char *pass = "123456789";
+
+DHT dht(DHTPIN, DHTTYPE);
+ESP8266WebServer server(80);
+
+void setup() {
+  Serial.begin(9600); 
+  dht.begin(); 
+  WiFi.begin(id,pass);
+  Serial.println("connecting...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println(WiFi.localIP());
+  server.on("/",handleRoot);
+  
+  server.begin();
+}
+
+void loop() {// IMPORTANT: Start DHT sensor!
+
+  server.handleClient();
+}
+
+
+void handleRoot() {
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+
+  String html = "<html><head><title>ESP8266 DHT11</title></head><body>";
+  html += "<h1>ESP8266 Temperature and Humidity</h1>";
+
+  if (isnan(temp) || isnan(hum)) {
+    html += "<p>Failed to read from DHT sensor!</p>";
+  } else {
+    html += "<p>Temperature: " + String(temp) + " &deg;C</p>";
+    html += "<p>Humidity: " + String(hum) + " %</p>";
+  }
+
+  html += "</body></html>";
+  server.send(200, "text/html", html);
+}
