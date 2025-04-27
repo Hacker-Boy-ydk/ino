@@ -1,0 +1,38 @@
+#include <DHT.h> // Including library for dht
+
+#define DHTPIN 0 //pin where the dht11 is connected
+
+DHT dht(DHTPIN, DHT11);
+
+void setup()
+
+{
+
+Serial.begin(9600); // Setting Baud rate to 9600
+
+}
+
+void loop()
+
+{
+
+float h = dht.readHumidity(); // read humidity
+
+float t = dht.readTemperature(); // read temp
+
+
+Serial.print(" Current humidity = ");
+
+Serial.print(h);
+
+Serial.print("% ");
+
+Serial.print("temperature = ");
+
+Serial.print(t);
+
+Serial.println("C ");
+
+delay(800);
+
+}
