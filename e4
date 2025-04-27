@@ -1,0 +1,167 @@
+#include <ESP8266WiFi.h>
+
+#include <WiFiClientSecure.h>
+
+#include <DHT.h>
+
+// DHT sensor setup
+
+#define DHTPIN D2 // Pin where the DHT11 is connected
+
+#define DHTTYPE DHT11 // DHT11 sensor type
+
+DHT dht(DHTPIN, DHTTYPE); // Initialize the DHT sensor
+
+// Wi-Fi credentials
+const char* ssid = "Abdul Qadeer"; // Replace with your Wi-Fi
+
+network name
+
+const char* password = "7715860090"; // Replace with your Wi-Fi
+
+password
+
+// Pushbullet credentials
+
+String pushbulletAPIKey = "o.1rNbntUMLrZmtAQnK425g3PgeAazfJKd"; //
+
+Replace with your Pushbullet API key
+
+String pushbulletURL = "https://api.pushbullet.com/v2/pushes";
+
+// Initialize secure Wi-Fi client
+
+WiFiClientSecure client;
+
+void setup() {
+
+ Serial.begin(9600);
+
+ // Initialize DHT sensor
+
+ dht.begin();
+
+ // Connect to Wi-Fi
+
+ Serial.println("Connecting to Wi-Fi...");
+
+ WiFi.begin(ssid, password);
+
+ // Wait for the connection
+
+ while (WiFi.status() != WL_CONNECTED) {
+
+ delay(1000);
+
+ Serial.print(".");
+
+ }
+
+ // Wi-Fi connected successfully
+
+ Serial.println("\nConnected to Wi-Fi");
+
+ // Set up the secure client
+
+ client.setInsecure(); // Disable SSL certificate validation (not
+
+recommended for production)
+
+}
+
+void loop() {
+
+ // Read temperature and humidity from DHT11 sensor
+ float temperature = dht.readTemperature();
+
+ float humidity = dht.readHumidity();
+
+ // Check if the reading failed and exit if so
+
+ if (isnan(temperature) || isnan(humidity)) {
+
+ Serial.println("Failed to read from DHT sensor!");
+
+ return;
+
+ }
+
+ // Prepare the notification message with DHT11 data
+
+ String message = "{\"type\": \"note\", \"title\": \"Perform By
+
+36,43,15\", ";
+
+ message += "\"body\": \"Temperature: " + String(temperature) + "°C,
+
+Humidity: " + String(humidity) + "%\"}";
+
+ // Send the notification to Pushbullet
+
+ sendPushbulletNotification(message);
+
+ // Wait for 5 seconds before sending the next notification
+
+ delay(5000);
+
+}
+
+void sendPushbulletNotification(String message) {
+
+ if (client.connect("api.pushbullet.com", 443)) {
+
+ // Sending POST request to Pushbullet API
+
+ client.println("POST " + pushbulletURL + " HTTP/1.1");
+
+ client.println("Host: api.pushbullet.com");
+
+ client.println("Authorization: Bearer " + pushbulletAPIKey);
+
+ client.println("Content-Type: application/json");
+
+ client.print("Content-Length: ");
+
+ client.println(message.length());
+
+ client.println(); // Blank line separating headers from body
+
+ client.println(message); // Send the notification message
+
+ // Wait for the server response
+
+ unsigned long timeout = millis();
+
+ while (client.available() == 0) {
+
+ if (millis() - timeout > 5000) {
+
+ Serial.println("Connection timed out");
+
+ return;
+ }
+
+ }
+
+ // Read and print the response from Pushbullet API
+
+ String response = "";
+
+ while (client.available()) {
+
+ response += char(client.read());
+
+ }
+
+ Serial.println("Response:");
+
+ Serial.println(response);
+
+ } else {
+
+ Serial.println("Connection failed");
+
+ }
+
+}
+
